@@ -57,29 +57,41 @@ nav {
 }
 
 .nav-logo {
-  display: flex; align-items: center; gap: 0.8rem;
+  display: flex; align-items: center; gap: 1rem;
 }
 
 .logo-img-wrap {
-  width: 40px; height: 40px;
+  width: 52px; height: 52px;
   display: flex; align-items: center; justify-content: center;
   filter: brightness(0) invert(1) sepia(1) saturate(3) hue-rotate(155deg);
-  /* turns the b&w logo cyan */
+  flex-shrink: 0;
 }
 
 .logo-img-wrap img {
-  width: 40px; height: 40px;
+  width: 52px; height: 52px;
   object-fit: contain;
+}
+
+.logo-text-block {
+  display: flex; flex-direction: column; gap: 0.05rem;
 }
 
 .logo-text {
   font-family: 'Orbitron', sans-serif;
-  font-size: 1rem; font-weight: 700;
+  font-size: 1.2rem; font-weight: 700;
   letter-spacing: 2px;
   color: #fff;
+  line-height: 1.1;
 }
 
 .logo-text span { color: var(--cyan); }
+
+.logo-tagline {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--cyan); opacity: 0.75;
+}
 
 .nav-links {
   display: flex; gap: 2.5rem; list-style: none;
@@ -1032,17 +1044,30 @@ footer {
 }
 
 .footer-logo {
-  display: flex; align-items: center; gap: 0.7rem;
+  display: flex; align-items: center; gap: 1rem;
 }
 
 .footer-logo-img {
-  width: 32px; height: 32px; object-fit: contain;
+  width: 44px; height: 44px; object-fit: contain;
   filter: brightness(0) invert(1) sepia(1) saturate(3) hue-rotate(155deg);
+  flex-shrink: 0;
+}
+
+.footer-logo-block {
+  display: flex; flex-direction: column; gap: 0.05rem;
 }
 
 .footer-logo-text {
   font-family: 'Orbitron', sans-serif;
-  font-size: 1rem; font-weight: 900; letter-spacing: 2px; color: var(--cyan);
+  font-size: 1.1rem; font-weight: 900; letter-spacing: 2px; color: var(--cyan);
+  line-height: 1.1;
+}
+
+.footer-logo-tagline {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.62rem; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--cyan); opacity: 0.65;
 }
 
 .footer-links { display: flex; gap: 2rem; list-style: none; }
@@ -1111,7 +1136,10 @@ footer {
     <div class="logo-img-wrap">
       <img src="assets/images/logo_1.png" alt="IA Fútbol Lab logo">
     </div>
-    <span class="logo-text">IA <span>FÚTBOL</span> LAB</span>
+    <div class="logo-text-block">
+      <span class="logo-text">IA <span>FÚTBOL</span> LAB</span>
+      <span class="logo-tagline">Diagnóstico Competitivo</span>
+    </div>
   </div>
   <ul class="nav-links">
     <li><a href="#problema">El Problema</a></li>
@@ -1682,7 +1710,7 @@ footer {
   <p class="cta-sub reveal">Solicita una demo gratuita o empieza con el diagnóstico de tu primer jugador hoy.</p>
   <div class="cta-btns reveal">
     <a href="https://wa.me/51999999999?text=Hola!%20Quiero%20información%20sobre%20IAFL" class="btn-primary" target="_blank">📱 WhatsApp</a>
-    <a href="mailto:contacto@iafutbollab.com" class="btn-secondary">✉ Email</a>
+    <a href="/cdn-cgi/l/email-protection#395a56574d585a4d567950585f4c4d5b565555585b175a5654" class="btn-secondary">✉ Email</a>
   </div>
 </section>
 
@@ -1690,7 +1718,10 @@ footer {
 <footer>
   <div class="footer-logo">
     <img src="assets/images/logo_1.png" alt="logo" class="footer-logo-img">
-    <span class="footer-logo-text">IA FÚTBOL LAB</span>
+    <div class="footer-logo-block">
+      <span class="footer-logo-text">IA FÚTBOL LAB</span>
+      <span class="footer-logo-tagline">Diagnóstico Competitivo</span>
+    </div>
   </div>
   <ul class="footer-links">
     <li><a href="#problema">El Problema</a></li>
@@ -1702,7 +1733,7 @@ footer {
   <span class="footer-copy">© 2026 IA Fútbol Lab · Lima, Perú · Todos los derechos reservados</span>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // Scroll reveal
 const reveals = document.querySelectorAll('.reveal');
 const obs = new IntersectionObserver((entries) => {
@@ -1716,11 +1747,4 @@ reveals.forEach(el => obs.observe(el));
 
 // Plan buttons → CTA
 document.querySelectorAll('.plan-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });
-  });
-});
-</script>
-
-</body>
-</html>
+  
