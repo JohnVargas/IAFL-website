@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IA Fútbol Lab — Diagnóstico de Rendimiento</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:    #08090c;
+  --ink2:   #0f1117;
+  --ink3:   #161923;
+  --steel:  #1c2230;
+  --cyan:   #00d4e8;
+  --cyan2:  #00a8be;
+  --glow:   rgba(0,212,232,0.12);
+  --glow2:  rgba(0,212,232,0.06);
+  --lime:   #b8f53c;
+  --white:  #f0f4f8;
+  --mist:   rgba(240,244,248,0.55);
+  --faint:  rgba(240,244,248,0.25);
+  --border: rgba(0,212,232,0.1);
+  --bhard:  rgba(0,212,232,0.28);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--ink);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+  font-weight: 300;
+}
+
+/* ─── GRAIN ─── */
+body::after {
+  content:''; position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:9999; opacity:0.6; mix-blend-mode:overlay;
+}
+
+/* ─── NAV ─── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 1.1rem 5rem;
+  background: rgba(8,9,12,0.92);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-brand {
+  display:flex; align-items:center; gap:0.75rem;
+}
+
+.nav-logo-img {
+  height:34px; width:auto; object-fit:contain;
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(160deg) brightness(1.1);
+}
+
+.nav-brand-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size:1.35rem; letter-spacing:3px;
+  color: var(--white);
+}
+
+.nav-brand-name em {
+  font-style:normal; color:var(--cyan);
+}
+
+.nav-right { display:flex; align-items:center; gap:3rem; }
+
+.nav-links { display:flex; gap:2.5rem; list-style:none; }
+.nav-links a {
+  font-family:'Rajdhani',sans-serif; font-size:0.8rem;
+  font-weight:600; letter-spacing:2px; text-transform:uppercase;
+  color:var(--mist); text-decoration:none;
+  transition:color .25s;
+}
+.nav-links a:hover { color:var(--cyan); }
+
+.nav-btn {
+  font-family:'Rajdhani',sans-serif; font-weight:700;
+  font-size:0.78rem; letter-spacing:2px; text-transform:uppercase;
+  padding:0.55rem 1.6rem;
+  background: var(--cyan); color: var(--ink);
+  border:none; cursor:pointer;
+  clip-path: polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+  transition: all .25s; text-decoration:none;
+  display:inline-block;
+}
+.nav-btn:hover { background:var(--white); box-shadow:0 0 30px var(--glow); }
+
+/* ─── HERO ─── */
+.hero {
+  min-height:100vh;
+  display:grid; grid-template-columns:1fr 1fr;
+  position:relative; overflow:hidden;
+}
+
+/* left: dark content */
+.hero-left {
+  display:flex; flex-direction:column; justify-content:center;
+  padding: 9rem 4rem 6rem 5rem;
+  position:relative; z-index:2;
+  background: linear-gradient(105deg, var(--ink) 60%, transparent 100%);
+}
+
+/* Vertical accent line */
+.hero-left::before {
+  content:'';
+  position:absolute; top:20%; bottom:20%; left:0;
+  width:3px;
+  background: linear-gradient(180deg, transparent, var(--cyan), transparent);
+  opacity:0.6;
+}
+
+.hero-overline {
+  display:flex; align-items:center; gap:0.8rem;
+  font-family:'Rajdhani',sans-serif;
+  font-size:0.72rem; font-weight:700; letter-spacing:4px;
+  text-transform:uppercase; color:var(--cyan);
+  margin-bottom:2rem;
+  animation: fadeL .8s ease both;
+}
+
+.hero-overline::before {
+  content:'';
+  width:28px; height:1px; background:var(--cyan);
+}
+
+.hero-h1 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size: clamp(4rem, 7vw, 7.5rem);
+  line-height:.92; letter-spacing:2px;
+  margin-bottom:1.6rem;
+  animation: fadeL .8s .12s ease both;
+}
+
+.hero-h1 .line-dim { color:rgba(240,244,248,0.35); display:block; }
+.hero-h1 .line-white { color:var(--white); display:block; }
+.hero-h1 .line-cyan {
+  color:var(--cyan); display:block;
+  text-shadow: 0 0 60px rgba(0,212,232,0.35);
+}
+
+.hero-sub {
+  font-size:1rem; line-height:1.8; color:var(--mist);
+  max-width:440px; margin-bottom:2.8rem;
+  animation: fadeL .8s .24s ease both;
+}
+
+.hero-sub strong { color:var(--white); font-weight:500; }
+
+.hero-actions {
+  display:flex; gap:1rem; flex-wrap:wrap;
+  animation: fadeL .8s .36s ease both;
+}
+
+.btn-cta {
+  font-family:'Rajdhani',sans-serif; font-weight:700;
+  font-size:0.9rem; letter-spacing:2px; text-transform:uppercase;
+  padding:0.95rem 2.4rem;
+  background: var(--cyan); color:var(--ink);
+  border:none; cursor:pointer;
+  clip-path: polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);
+  transition:all .3s; text-decoration:none;
+  display:inline-flex; align-items:center; gap:0.5rem;
+}
+.btn-cta:hover { background:var(--white); box-shadow:0 0 50px var(--glow); transform:translateY(-2px); }
+
+.btn-ghost {
+  font-family:'Rajdhani',sans-serif; font-weight:600;
+  font-size:0.9rem; letter-spacing:2px; text-transform:uppercase;
+  padding:0.95rem 2.4rem;
+  background:transparent; color:var(--white);
+  border:1px solid rgba(240,244,248,0.2); cursor:pointer;
+  clip-path: polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);
+  transition:all .3s; text-decoration:none;
+  display:inline-flex; align-items:center; gap:0.5rem;
+}
+.btn-ghost:hover { border-color:var(--cyan); color:var(--cyan); transform:translateY(-2px); }
+
+/* Hero right: image */
+.hero-right {
+  position:relative; overflow:hidden;
+}
+
+.hero-right img {
+  width:100%; height:100%; object-fit:cover;
+  object-position:center;
+  filter:brightness(0.55) contrast(1.1);
+}
+
+/* cyan overlay gradient */
+.hero-right::before {
+  content:''; position:absolute; inset:0; z-index:1;
+  background: linear-gradient(105deg, var(--ink) 0%, transparent 40%),
+              linear-gradient(0deg, rgba(0,212,232,0.08) 0%, transparent 60%);
+}
+
+/* scan line */
+.scan {
+  position:absolute; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  opacity:0.2; animation:scanV 10s linear infinite; z-index:3;
+}
+@keyframes scanV { 0%{top:0} 100%{top:100%} }
+
+/* bottom label on hero image */
+.hero-img-label {
+  position:absolute; bottom:2rem; right:2rem; z-index:2;
+  background:rgba(8,9,12,0.85); border:1px solid var(--bhard);
+  padding:.7rem 1.2rem;
+  font-family:'Rajdhani',sans-serif; font-size:0.7rem;
+  font-weight:700; letter-spacing:3px; text-transform:uppercase;
+  color:var(--cyan);
+  backdrop-filter:blur(10px);
+}
+
+/* ─── TRUST BAR ─── */
+.trust-bar {
+  background:var(--ink2);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  display:flex; justify-content:center;
+  overflow:hidden;
+}
+
+.trust-track {
+  display:flex; gap:0; flex:1;
+  max-width:1400px;
+}
+
+.trust-item {
+  flex:1; text-align:center; padding:1.6rem 1rem;
+  border-right:1px solid var(--border);
+  transition:background .3s;
+}
+.trust-item:last-child { border-right:none; }
+.trust-item:hover { background:var(--glow2); }
+
+.trust-val {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:2.2rem; letter-spacing:2px;
+  color:var(--white); display:block;
+  transition:color .3s;
+}
+.trust-item:hover .trust-val { color:var(--cyan); }
+
+.trust-label {
+  font-family:'Rajdhani',sans-serif;
+  font-size:0.68rem; font-weight:600; letter-spacing:2px;
+  text-transform:uppercase; color:var(--mist);
+  margin-top:.3rem; display:block;
+}
+
+/* ─── SECTION COMMON ─── */
+.s-tag {
+  font-family:'Rajdhani',sans-serif;
+  font-size:0.68rem; font-weight:700; letter-spacing:4px;
+  text-transform:uppercase; color:var(--cyan);
+  display:flex; align-items:center; gap:.6rem; margin-bottom:.8rem;
+}
+.s-tag::before { content:''; width:20px; height:1px; background:var(--cyan); }
+
+.s-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2.2rem,4vw,3.8rem); letter-spacing:2px;
+  line-height:1;
+}
+.s-title span { color:var(--cyan); }
+
+.s-body {
+  font-size:.95rem; line-height:1.8; color:var(--mist);
+  max-width:540px;
+}
+
+/* ─── PILLARS ─── */
+.pillars {
+  padding:7rem 5rem;
+  background:var(--ink);
+}
+
+.pillars-inner { max-width:1300px; margin:0 auto; }
+
+.pillars-head {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:4rem; align-items:end; margin-bottom:4rem;
+}
+
+.pillars-lede {
+  font-size:1.1rem; line-height:1.8; color:var(--mist);
+}
+.pillars-lede strong { color:var(--white); font-weight:500; }
+
+.pillars-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:1.5px; /* razor thin gap = wall of cards */
+  background:var(--border);
+  border:1px solid var(--border);
+}
+
+.pillar-card {
+  background:var(--ink2);
+  padding:2.5rem 2rem;
+  position:relative; overflow:hidden;
+  transition:background .35s;
+}
+
+.pillar-card:hover { background:var(--ink3); }
+
+.pillar-card::after {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background:var(--cyan); transform:scaleX(0);
+  transform-origin:left; transition:transform .35s;
+}
+.pillar-card:hover::after { transform:scaleX(1); }
+
+.pc-num {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:4rem; color:rgba(0,212,232,0.07);
+  line-height:1; position:absolute;
+  top:1rem; right:1.5rem; pointer-events:none;
+  transition:color .35s;
+}
+.pillar-card:hover .pc-num { color:rgba(0,212,232,0.12); }
+
+.pc-icon { font-size:1.8rem; margin-bottom:1.2rem; display:block; }
+
+.pc-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.5rem; letter-spacing:1px;
+  margin-bottom:.6rem;
+}
+
+.pc-desc {
+  font-size:.85rem; line-height:1.75;
+  color:var(--mist);
+}
+
+/* ─── PROCESS ─── */
+.process {
+  padding:7rem 5rem;
+  background:var(--ink2);
+  position:relative; overflow:hidden;
+}
+
+.process::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; bottom:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 80% 50%, rgba(0,212,232,0.04) 0%, transparent 100%);
+  pointer-events:none;
+}
+
+.process-inner { max-width:1300px; margin:0 auto; position:relative; z-index:1; }
+
+.process-head { margin-bottom:4rem; }
+
+.process-steps {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  position:relative;
+}
+
+/* connecting line */
+.process-steps::before {
+  content:'';
+  position:absolute; top:2rem; left:12%; right:12%; height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--cyan),transparent);
+  opacity:0.2;
+}
+
+.proc-step {
+  padding:2rem 1.5rem 2rem 0;
+  position:relative;
+}
+
+.proc-num {
+  width:44px; height:44px;
+  border:1px solid var(--bhard);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Bebas Neue',sans-serif; font-size:1.1rem;
+  letter-spacing:1px; color:var(--cyan);
+  background:var(--ink2); margin-bottom:1.5rem;
+  position:relative; z-index:1;
+  clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);
+}
+
+.proc-title {
+  font-family:'Rajdhani',sans-serif; font-weight:700;
+  font-size:1rem; letter-spacing:1px; text-transform:uppercase;
+  margin-bottom:.6rem; color:var(--white);
+}
+
+.proc-desc {
+  font-size:.83rem; line-height:1.7; color:var(--mist);
+}
+
+/* ─── AUDIENCES ─── */
+.audiences { padding:7rem 5rem; background:var(--ink); }
+.aud-inner { max-width:1300px; margin:0 auto; }
+
+.aud-head { margin-bottom:4rem; }
+
+.aud-grid {
+  display:grid; grid-template-columns:repeat(2,1fr);
+  gap:2px; background:var(--border);
+  border:1px solid var(--border);
+}
+
+.aud-card {
+  background:var(--ink2); padding:2.5rem;
+  display:flex; gap:1.8rem; align-items:flex-start;
+  transition:background .3s;
+  cursor:default;
+}
+.aud-card:hover { background:var(--ink3); }
+
+.aud-icon-wrap {
+  width:52px; height:52px; flex-shrink:0;
+  border:1px solid var(--bhard); background:var(--glow2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.4rem;
+  clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+}
+
+.aud-text {}
+.aud-title {
+  font-family:'Rajdhani',sans-serif; font-weight:700;
+  font-size:1.1rem; letter-spacing:1px; text-transform:uppercase;
+  margin-bottom:.5rem;
+}
+.aud-desc {
+  font-size:.85rem; line-height:1.7; color:var(--mist);
+}
+
+.aud-tag {
+  display:inline-block; margin-top:.8rem;
+  font-family:'Rajdhani',sans-serif; font-size:0.65rem;
+  font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:var(--cyan); border:1px solid var(--bhard);
+  padding:.15rem .6rem; background:var(--glow2);
+}
+
+/* ─── RESULT PROMISE ─── */
+.promise {
+  padding:7rem 5rem;
+  background:var(--ink2);
+  position:relative; overflow:hidden;
+}
+
+.promise::before {
+  content:'';
+  position:absolute; bottom:-200px; right:-200px;
+  width:600px; height:600px;
+  background:radial-gradient(circle,rgba(0,212,232,0.06) 0%,transparent 65%);
+  pointer-events:none;
+}
+
+.promise-inner {
+  max-width:1300px; margin:0 auto;
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:6rem; align-items:center;
+  position:relative; z-index:1;
+}
+
+.promise-visual {
+  position:relative;
+}
+
+.pv-img {
+  width:100%; border-radius:4px;
+  overflow:hidden; position:relative;
+}
+.pv-img img {
+  width:100%; display:block;
+  filter:brightness(.75) contrast(1.1);
+  border-radius:4px;
+}
+.pv-img::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(0,212,232,0.08) 0%,transparent 60%);
+  border-radius:4px;
+}
+.pv-img::before {
+  content:''; position:absolute;
+  top:0;left:0;right:0; height:3px; z-index:1;
+  background:linear-gradient(90deg,var(--cyan),rgba(184,245,60,0.7),var(--cyan));
+  border-radius:4px 4px 0 0;
+}
+
+/* floating metric card */
+.pv-float {
+  position:absolute; bottom:-1.5rem; right:-1.5rem;
+  background:var(--ink); border:1px solid var(--bhard);
+  padding:1rem 1.4rem;
+  animation:bob 5s ease-in-out infinite;
+  z-index:3;
+}
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+.pv-float-label {
+  font-family:'Rajdhani',sans-serif; font-size:.65rem;
+  font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:var(--mist); margin-bottom:.3rem;
+}
+.pv-float-val {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.6rem; letter-spacing:2px; color:var(--cyan);
+}
+.pv-float-sub {
+  font-size:.72rem; color:var(--mist); line-height:1.4;
+}
+
+/* promise list */
+.promise-content {}
+.promise-list {
+  list-style:none; margin-top:2.5rem;
+  display:flex; flex-direction:column; gap:1.2rem;
+}
+
+.pl-item {
+  display:flex; gap:1.2rem; align-items:flex-start;
+}
+
+.pl-bullet {
+  width:30px; height:30px; flex-shrink:0;
+  background:var(--glow2); border:1px solid var(--bhard);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.75rem; color:var(--cyan);
+  clip-path:polygon(4px 0%,100% 0%,calc(100% - 4px) 100%,0% 100%);
+  margin-top:2px;
+}
+
+.pl-text {}
+.pl-title {
+  font-family:'Rajdhani',sans-serif; font-weight:700;
+  font-size:.95rem; letter-spacing:.5px;
+  margin-bottom:.2rem; color:var(--white);
+}
+.pl-desc { font-size:.82rem; color:var(--mist); line-height:1.6; }
+
+/* ─── CONTACT / CTA ─── */
+.cta {
+  padding:8rem 5rem;
+  background:var(--ink);
+  position:relative; overflow:hidden;
+}
+
+.cta::before {
+  content:'';
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  width:800px; height:400px;
+  background:radial-gradient(ellipse,rgba(0,212,232,0.05) 0%,transparent 65%);
+  pointer-events:none;
+}
+
+/* big watermark */
+.cta-wm {
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  font-family:'Bebas Neue',sans-serif;
+  font-size:18vw; color:rgba(0,212,232,0.025);
+  white-space:nowrap; pointer-events:none; letter-spacing:8px;
+  user-select:none;
+}
+
+.cta-inner {
+  max-width:800px; margin:0 auto; text-align:center;
+  position:relative; z-index:2;
+}
+
+.cta-eyebrow {
+  display:inline-flex; align-items:center; gap:.6rem;
+  font-family:'Rajdhani',sans-serif; font-size:.72rem;
+  font-weight:700; letter-spacing:4px; text-transform:uppercase;
+  color:var(--cyan); margin-bottom:2rem;
+}
+.cta-eyebrow::before, .cta-eyebrow::after {
+  content:''; height:1px; width:30px; background:var(--cyan);
+}
+
+.cta-h2 {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(3rem,6vw,6.5rem);
+  line-height:.95; letter-spacing:2px;
+  margin-bottom:1.5rem;
+}
+.cta-h2 span { color:var(--cyan); }
+
+.cta-sub {
+  font-size:1rem; line-height:1.8; color:var(--mist);
+  margin-bottom:1rem;
+}
+
+.cta-note {
+  font-family:'Rajdhani',sans-serif; font-size:.75rem;
+  font-weight:600; letter-spacing:2px; text-transform:uppercase;
+  color:var(--faint); margin-bottom:3rem;
+}
+
+.cta-btns {
+  display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;
+}
+
+/* contact cards */
+.contact-cards {
+  display:flex; gap:1rem; justify-content:center;
+  margin-top:3rem; flex-wrap:wrap;
+}
+
+.contact-card {
+  background:var(--ink2); border:1px solid var(--border);
+  padding:1.2rem 2rem; text-decoration:none;
+  display:flex; align-items:center; gap:.8rem;
+  transition:all .3s; min-width:200px;
+}
+.contact-card:hover {
+  border-color:var(--bhard); background:var(--glow2);
+  transform:translateY(-3px);
+}
+.contact-card .cc-icon { font-size:1.3rem; }
+.contact-card .cc-body {}
+.contact-card .cc-label {
+  font-family:'Rajdhani',sans-serif; font-size:.65rem;
+  font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:var(--mist); display:block;
+}
+.contact-card .cc-val {
+  font-family:'Rajdhani',sans-serif; font-weight:700;
+  font-size:.95rem; color:var(--cyan);
+}
+
+/* ─── FOOTER ─── */
+footer {
+  background:var(--ink2);
+  border-top:1px solid var(--border);
+  padding:2.5rem 5rem;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:1.5rem;
+}
+
+.footer-brand {
+  display:flex; align-items:center; gap:.7rem;
+}
+.footer-logo-img {
+  height:28px; width:auto; object-fit:contain;
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(160deg) brightness(1.1);
+}
+.footer-name {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.1rem; letter-spacing:3px; color:var(--cyan);
+}
+
+.footer-links { display:flex; gap:2rem; list-style:none; }
+.footer-links a {
+  font-family:'Rajdhani',sans-serif; font-size:.75rem;
+  font-weight:600; letter-spacing:1px; text-decoration:none;
+  color:var(--mist); transition:color .25s;
+}
+.footer-links a:hover { color:var(--cyan); }
+
+.footer-copy {
+  font-family:'DM Sans',sans-serif; font-size:.72rem;
+  color:var(--faint); letter-spacing:.5px;
+}
+
+/* ─── REVEAL ─── */
+.reveal { opacity:0; transform:translateY(30px); transition:opacity .7s ease,transform .7s ease; }
+.reveal.up { opacity:1; transform:translateY(0); }
+.reveal-left { opacity:0; transform:translateX(-25px); transition:opacity .7s ease,transform .7s ease; }
+.reveal-left.up { opacity:1; transform:translateX(0); }
+
+/* ─── KEYFRAMES ─── */
+@keyframes fadeL {
+  from { opacity:0; transform:translateX(-20px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:1024px){
+  nav { padding:1rem 1.5rem; }
+  .nav-links, .nav-right .nav-links { display:none; }
+  .hero { grid-template-columns:1fr; min-height:auto; }
+  .hero-right { height:50vw; }
+  .hero-left { padding:8rem 1.5rem 4rem; }
+  .hero-left::before { display:none; }
+  .pillars { padding:4rem 1.5rem; }
+  .pillars-head { grid-template-columns:1fr; gap:1.5rem; }
+  .pillars-grid { grid-template-columns:1fr; }
+  .process { padding:4rem 1.5rem; }
+  .process-steps { grid-template-columns:1fr 1fr; }
+  .audiences, .promise { padding:4rem 1.5rem; }
+  .aud-grid { grid-template-columns:1fr; }
+  .promise-inner { grid-template-columns:1fr; gap:3rem; }
+  .cta { padding:5rem 1.5rem; }
+  footer { padding:2rem 1.5rem; flex-direction:column; align-items:flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <img src="/mnt/user-data/uploads/logo_1.png" alt="IA Fútbol Lab" class="nav-logo-img">
+    <span class="nav-brand-name">IA <em>FÚTBOL</em> LAB</span>
+  </div>
+  <div class="nav-right">
+    <ul class="nav-links">
+      <li><a href="#proceso">Proceso</a></li>
+      <li><a href="#para-quien">Para quién</a></li>
+      <li><a href="#resultados">Resultados</a></li>
+    </ul>
+    <a href="#contacto" class="nav-btn">Solicitar información</a>
+  </div>
+</nav>
+
+<!-- SCAN LINE -->
+<div class="scan"></div>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-overline">Diagnóstico de Rendimiento · Lima, Perú</div>
+    <h1 class="hero-h1">
+      <span class="line-dim">VES</span>
+      <span class="line-white">EL JUEGO.</span>
+      <span class="line-cyan">NOSOTROS<br>LOS DATOS.</span>
+    </h1>
+    <p class="hero-sub">
+      Evaluamos el rendimiento real de jugadores en formación con <strong>tecnología de análisis deportivo</strong> — entregando información objetiva que transforma la toma de decisiones de entrenadores, academias y clubes.
+    </p>
+    <div class="hero-actions">
+      <a href="#contacto" class="btn-cta">Solicitar evaluación →</a>
+      <a href="#proceso" class="btn-ghost">Ver cómo funciona</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <img src="/mnt/user-data/uploads/3.png" alt="Tecnología de análisis de rendimiento futbolístico">
+    <div class="hero-img-label">Tecnología · Análisis · Resultado</div>
+  </div>
+</section>
+
+<!-- ══════════════ TRUST BAR ══════════════ -->
+<div class="trust-bar">
+  <div class="trust-track">
+    <div class="trust-item reveal">
+      <span class="trust-val">48h</span>
+      <span class="trust-label">Entrega de resultados</span>
+    </div>
+    <div class="trust-item reveal">
+      <span class="trust-val">100%</span>
+      <span class="trust-label">Datos objetivos</span>
+    </div>
+    <div class="trust-item reveal">
+      <span class="trust-val">4W</span>
+      <span class="trust-label">Plan de acción incluido</span>
+    </div>
+    <div class="trust-item reveal">
+      <span class="trust-val">360°</span>
+      <span class="trust-label">Visión del jugador</span>
+    </div>
+    <div class="trust-item reveal">
+      <span class="trust-val">∞</span>
+      <span class="trust-label">Seguimiento en el tiempo</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PILLARS ══════════════ -->
+<section class="pillars" id="proceso">
+  <div class="pillars-inner">
+    <div class="pillars-head">
+      <div>
+        <div class="s-tag reveal-left">Qué hacemos</div>
+        <h2 class="s-title reveal-left">TRES<br><span>CERTEZAS</span></h2>
+      </div>
+      <p class="pillars-lede reveal">
+        No reemplazamos al entrenador.<br>Le damos lo que la intuición sola no puede: <strong>evidencia</strong>. Un sistema de diagnóstico que convierte lo que ocurre en cancha en información procesable y defendible.
+      </p>
+    </div>
+
+    <div class="pillars-grid">
+      <div class="pillar-card reveal">
+        <span class="pc-num">01</span>
+        <span class="pc-icon">🎯</span>
+        <div class="pc-title">Diagnóstico Individual</div>
+        <p class="pc-desc">Evaluación completa del jugador en condiciones controladas y en partido real. Obtienes una radiografía objetiva de su nivel actual: dónde está, qué lo limita y cómo puede crecer.</p>
+      </div>
+      <div class="pillar-card reveal">
+        <span class="pc-num">02</span>
+        <span class="pc-icon">📈</span>
+        <div class="pc-title">Seguimiento Evolutivo</div>
+        <p class="pc-desc">Comparamos al jugador consigo mismo en el tiempo. No rankings subjetivos — curvas de progreso reales que hacen visible el desarrollo y permiten ajustar el plan cuando es necesario.</p>
+      </div>
+      <div class="pillar-card reveal">
+        <span class="pc-num">03</span>
+        <span class="pc-icon">🏫</span>
+        <div class="pc-title">Análisis de Plantel</div>
+        <p class="pc-desc">Para academias y clubes: evaluación masiva con dashboard comparativo y reportes individuales. Argumentos sólidos ante directivos y familias, respaldados por datos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PROCESS ══════════════ -->
+<section class="process">
+  <div class="process-inner">
+    <div class="process-head">
+      <div class="s-tag reveal-left">Protocolo</div>
+      <h2 class="s-title reveal-left">CÓMO<br><span>TRABAJAMOS</span></h2>
+    </div>
+
+    <div class="process-steps">
+      <div class="proc-step reveal">
+        <div class="proc-num">01</div>
+        <div class="proc-title">Sesión de evaluación</div>
+        <p class="proc-desc">El jugador participa en una sesión estructurada con sensores de rendimiento. Capturamos lo que ocurre, no lo que se recuerda.</p>
+      </div>
+      <div class="proc-step reveal">
+        <div class="proc-num">02</div>
+        <div class="proc-title">Análisis en partido real</div>
+        <p class="proc-desc">Medimos cómo se transfiere el potencial al contexto competitivo. El partido no miente.</p>
+      </div>
+      <div class="proc-step reveal">
+        <div class="proc-num">03</div>
+        <div class="proc-title">Procesamiento y diagnóstico</div>
+        <p class="proc-desc">Nuestro sistema procesa los datos en múltiples dimensiones de rendimiento y genera un perfil preciso en menos de 48 horas.</p>
+      </div>
+      <div class="proc-step reveal">
+        <div class="proc-num">04</div>
+        <div class="proc-title">Reporte + plan de acción</div>
+        <p class="proc-desc">Informe en PDF con fortalezas, áreas prioritarias y un plan estructurado de 4 semanas. Listo para implementar.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ AUDIENCES ══════════════ -->
+<section class="audiences" id="para-quien">
+  <div class="aud-inner">
+    <div class="aud-head">
+      <div class="s-tag reveal-left">Para quién</div>
+      <h2 class="s-title reveal-left">DISEÑADO<br><span>PARA USTED</span></h2>
+    </div>
+
+    <div class="aud-grid">
+      <div class="aud-card reveal">
+        <div class="aud-icon-wrap">👨‍👩‍👦</div>
+        <div class="aud-text">
+          <div class="aud-title">Padres de jugadores</div>
+          <p class="aud-desc">Información objetiva sobre el desarrollo real de su hijo. Un informe claro que le permite acompañar el proceso con datos — no con suposiciones.</p>
+          <span class="aud-tag">Formación competitiva activa</span>
+        </div>
+      </div>
+      <div class="aud-card reveal">
+        <div class="aud-icon-wrap">🧑‍🏫</div>
+        <div class="aud-text">
+          <div class="aud-title">Directores Técnicos</div>
+          <p class="aud-desc">Respaldo objetivo para sus decisiones. Deje de justificar en base a la intuición — justifique con evidencia medible ante jugadores, directivos y familias.</p>
+          <span class="aud-tag">Herramienta para el DT moderno</span>
+        </div>
+      </div>
+      <div class="aud-card reveal">
+        <div class="aud-icon-wrap">🏟️</div>
+        <div class="aud-text">
+          <div class="aud-title">Academias Institucionales</div>
+          <p class="aud-desc">Evaluación masiva de plantel. Identifique perfiles, detecte talentos temprano y ofrezca a las familias un diferencial concreto: datos reales sobre el progreso de sus hijos.</p>
+          <span class="aud-tag">Diferenciador competitivo</span>
+        </div>
+      </div>
+      <div class="aud-card reveal">
+        <div class="aud-icon-wrap">🤝</div>
+        <div class="aud-text">
+          <div class="aud-title">Empresas y Sponsors Deportivos</div>
+          <p class="aud-desc">Datos de rendimiento confiables para inversiones en desarrollo deportivo. Identificación de perfiles de alto potencial con métricas objetivas y seguimiento longitudinal.</p>
+          <span class="aud-tag">Decisiones de inversión con datos</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ PROMISE / RESULTS ══════════════ -->
+<section class="promise" id="resultados">
+  <div class="promise-inner">
+    <div class="promise-visual reveal">
+      <div class="pv-img">
+        <img src="/mnt/user-data/uploads/Imagen_1.png" alt="Análisis de rendimiento con sensor">
+      </div>
+      <div class="pv-float">
+        <div class="pv-float-label">Resultado del análisis</div>
+        <div class="pv-float-val">REPORTE PDF</div>
+        <div class="pv-float-sub">Entregado en 48h · listo para actuar</div>
+      </div>
+    </div>
+
+    <div class="promise-content">
+      <div class="s-tag reveal-left">Qué obtienes</div>
+      <h2 class="s-title reveal-left">EL INFORME<br><span>QUE CAMBIA</span><br>DECISIONES</h2>
+
+      <ul class="promise-list">
+        <li class="pl-item reveal">
+          <div class="pl-bullet">✓</div>
+          <div class="pl-text">
+            <div class="pl-title">Perfil completo del jugador</div>
+            <p class="pl-desc">Análisis en múltiples dimensiones de rendimiento — técnico, físico, táctico y decisional — con visualizaciones claras para el entrenador.</p>
+          </div>
+        </li>
+        <li class="pl-item reveal">
+          <div class="pl-bullet">✓</div>
+          <div class="pl-text">
+            <div class="pl-title">Fortalezas y áreas prioritarias</div>
+            <p class="pl-desc">Identificamos qué potenciar y qué desarrollar, con prioridades claras ordenadas por impacto en el rendimiento competitivo.</p>
+          </div>
+        </li>
+        <li class="pl-item reveal">
+          <div class="pl-bullet">✓</div>
+          <div class="pl-text">
+            <div class="pl-title">Plan de mejora estructurado</div>
+            <p class="pl-desc">4 semanas de trabajo focalizado. Drills específicos y objetivos medibles que el DT puede implementar de inmediato en sus sesiones.</p>
+          </div>
+        </li>
+        <li class="pl-item reveal">
+          <div class="pl-bullet">✓</div>
+          <div class="pl-text">
+            <div class="pl-title">Evolución en el tiempo</div>
+            <p class="pl-desc">El seguimiento trimestral permite ver el progreso real — comparando al jugador consigo mismo, no con otros.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ CTA ══════════════ -->
+<section class="cta" id="contacto">
+  <div class="cta-wm">IAFL</div>
+  <div class="cta-inner">
+    <div class="cta-eyebrow reveal">Lima, Perú · Diagnóstico Competitivo</div>
+    <h2 class="cta-h2 reveal">
+      DATOS<br><span>REALES.</span><br>DECISIONES<br>MEJORES.
+    </h2>
+    <p class="cta-sub reveal">
+      El primer paso es una evaluación. Le explicamos el proceso, resolvemos sus dudas y le presentamos una propuesta adaptada a sus necesidades.
+    </p>
+    <p class="cta-note reveal">Sin compromiso · Respuesta en menos de 24 horas</p>
+
+    <div class="contact-cards reveal">
+      <a href="https://wa.me/51999999999?text=Hola,%20quiero%20información%20sobre%20IA%20Fútbol%20Lab" class="contact-card" target="_blank">
+        <span class="cc-icon">📱</span>
+        <div class="cc-body">
+          <span class="cc-label">WhatsApp</span>
+          <span class="cc-val">Escribir ahora →</span>
+        </div>
+      </a>
+      <a href="mailto:contacto@iafutbollab.com" class="contact-card">
+        <span class="cc-icon">✉️</span>
+        <div class="cc-body">
+          <span class="cc-label">Email</span>
+          <span class="cc-val">contacto@iafutbollab.com</span>
+        </div>
+      </a>
+      <a href="#" class="contact-card">
+        <span class="cc-icon">📍</span>
+        <div class="cc-body">
+          <span class="cc-label">Ubicación</span>
+          <span class="cc-val">Lima, Perú</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <div class="footer-brand">
+    <img src="/mnt/user-data/uploads/logo_1.png" alt="logo" class="footer-logo-img">
+    <span class="footer-name">IA FÚTBOL LAB</span>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#proceso">Proceso</a></li>
+    <li><a href="#para-quien">Para quién</a></li>
+    <li><a href="#resultados">Resultados</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 IA Fútbol Lab · Lima, Perú</span>
+</footer>
+
+<script>
+const els = document.querySelectorAll('.reveal, .reveal-left');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('up'), i * 80);
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+els.forEach(el => io.observe(el));
+</script>
+</body>
+</html>
