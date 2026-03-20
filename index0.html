@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IAFL – IA Fútbol Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cyan: #00e5ff;
+    --cyan-dim: #00b8d9;
+    --cyan-glow: rgba(0,229,255,0.15);
+    --green: #00ff88;
+    --purple: #a855f7;
+    --dark: #050a0f;
+    --dark2: #080f1a;
+    --dark3: #0d1a2a;
+    --card: rgba(255,255,255,0.03);
+    --border: rgba(0,229,255,0.15);
+    --text: #e0f7fa;
+    --text-dim: rgba(224,247,250,0.55);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 999; opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 4rem;
+    background: rgba(5,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    display: flex; align-items: center; gap: 0.8rem;
+  }
+
+  .logo-icon {
+    width: 38px; height: 38px;
+    border: 2px solid var(--cyan);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px; font-weight: 900;
+    color: var(--cyan);
+    box-shadow: 0 0 15px var(--cyan-glow);
+  }
+
+  .logo-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem; font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+  }
+
+  .logo-text span { color: var(--cyan); }
+
+  .nav-links {
+    display: flex; gap: 2.5rem; list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover { color: var(--cyan); }
+
+  .nav-cta {
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    padding: 0.6rem 1.5rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+
+  .nav-cta:hover {
+    background: var(--cyan);
+    color: var(--dark);
+    box-shadow: 0 0 25px var(--cyan-glow);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    padding: 8rem 4rem 4rem;
+  }
+
+  /* Grid lines background */
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridShift 20s linear infinite;
+  }
+
+  @keyframes gridShift {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(60px); }
+  }
+
+  /* Radial glow center */
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(0,229,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative; z-index: 2;
+    text-align: center; max-width: 900px;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--cyan-glow);
+    padding: 0.4rem 1.2rem;
+    border-radius: 2px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem; font-weight: 600;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 2rem;
+    animation: fadeInDown 0.8s ease forwards;
+  }
+
+  .hero-badge::before {
+    content: '▶';
+    font-size: 0.6rem;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .hero-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(3.5rem, 9vw, 7rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -2px;
+    margin-bottom: 0.5rem;
+    animation: fadeInUp 0.8s 0.2s ease both;
+  }
+
+  .hero-title .highlight {
+    color: var(--cyan);
+    text-shadow: 0 0 40px rgba(0,229,255,0.5), 0 0 80px rgba(0,229,255,0.2);
+    position: relative;
+  }
+
+  .hero-subtitle-line {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    font-weight: 500;
+    letter-spacing: 6px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    animation: fadeInUp 0.8s 0.3s ease both;
+  }
+
+  .hero-subtitle-line span {
+    color: var(--cyan);
+    margin: 0 0.5rem;
+  }
+
+  .hero-description {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    line-height: 1.8;
+    max-width: 600px; margin: 0 auto 3rem;
+    font-weight: 300;
+    animation: fadeInUp 0.8s 0.4s ease both;
+  }
+
+  .hero-ctas {
+    display: flex; gap: 1.2rem; justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeInUp 0.8s 0.5s ease both;
+  }
+
+  .btn-primary {
+    background: var(--cyan);
+    color: var(--dark);
+    border: none;
+    padding: 1rem 2.5rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700; font-size: 1rem;
+    letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+
+  .btn-primary:hover {
+    background: #fff;
+    box-shadow: 0 0 40px rgba(0,229,255,0.4);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 1rem 2.5rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600; font-size: 1rem;
+    letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    transform: translateY(-2px);
+  }
+
+  /* Floating corner decorators */
+  .corner-tl, .corner-br {
+    position: absolute;
+    width: 60px; height: 60px;
+    pointer-events: none;
+  }
+
+  .corner-tl {
+    top: 8rem; left: 4rem;
+    border-top: 2px solid var(--cyan);
+    border-left: 2px solid var(--cyan);
+    opacity: 0.4;
+  }
+
+  .corner-br {
+    bottom: 3rem; right: 4rem;
+    border-bottom: 2px solid var(--cyan);
+    border-right: 2px solid var(--cyan);
+    opacity: 0.4;
+  }
+
+  /* Animated scan line */
+  .scan-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.3;
+    animation: scanDown 6s linear infinite;
+  }
+
+  @keyframes scanDown {
+    0% { top: 0; }
+    100% { top: 100%; }
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    background: var(--dark2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 4rem;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 1rem;
+    border-right: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+
+  .stat-item:last-child { border-right: none; }
+
+  .stat-item:hover .stat-number { color: var(--cyan); text-shadow: 0 0 20px var(--cyan-glow); }
+
+  .stat-number {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.2rem; font-weight: 900;
+    color: #fff;
+    transition: all 0.3s;
+  }
+
+  .stat-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 0.3rem;
+  }
+
+  /* ── SECTION COMMON ── */
+  section { padding: 6rem 4rem; }
+
+  .section-header {
+    text-align: center; margin-bottom: 4rem;
+  }
+
+  .section-tag {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 4px; text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .section-title span { color: var(--cyan); }
+
+  /* ── PLANS ── */
+  .plans { background: var(--dark2); }
+
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    max-width: 1100px; margin: 0 auto;
+  }
+
+  .plan-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    position: relative;
+    clip-path: polygon(16px 0%, 100% 0%, calc(100% - 16px) 100%, 0% 100%);
+    transition: all 0.4s;
+    overflow: hidden;
+  }
+
+  .plan-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--cyan-glow) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .plan-card:hover::before { opacity: 1; }
+  .plan-card:hover {
+    border-color: var(--cyan);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0,229,255,0.1);
+  }
+
+  .plan-card.featured {
+    border-color: var(--cyan);
+    background: rgba(0,229,255,0.04);
+  }
+
+  .plan-card.featured::after {
+    content: 'MÁS POPULAR';
+    position: absolute; top: 1rem; right: -1.5rem;
+    background: var(--cyan);
+    color: var(--dark);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 2px;
+    padding: 0.3rem 2rem;
+    transform: rotate(45deg);
+  }
+
+  .plan-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 0.5rem;
+  }
+
+  .plan-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.6rem; font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 1.2rem;
+  }
+
+  .plan-desc {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  .plan-price {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem; font-weight: 900;
+    color: #fff;
+    margin-bottom: 0.3rem;
+  }
+
+  .plan-price-note {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 2rem;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 1px;
+  }
+
+  .plan-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .plan-features {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 0.8rem;
+    margin-bottom: 2rem;
+  }
+
+  .plan-features li {
+    display: flex; align-items: center; gap: 0.8rem;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+
+  .plan-features li::before {
+    content: '◆';
+    color: var(--cyan);
+    font-size: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .plan-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    padding: 0.9rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700; font-size: 0.9rem;
+    letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: all 0.3s;
+  }
+
+  .plan-btn:hover, .plan-card.featured .plan-btn {
+    background: var(--cyan);
+    color: var(--dark);
+    box-shadow: 0 0 30px rgba(0,229,255,0.3);
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how {
+    position: relative; overflow: hidden;
+  }
+
+  .how::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.1;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    max-width: 1000px; margin: 0 auto;
+    position: relative;
+  }
+
+  .steps::before {
+    content: '';
+    position: absolute;
+    top: 2.5rem; left: 15%; right: 15%;
+    height: 1px;
+    background: linear-gradient(90deg, var(--cyan), rgba(0,229,255,0.2), var(--cyan));
+    opacity: 0.3;
+  }
+
+  .step {
+    text-align: center;
+    padding: 2rem 1rem;
+    position: relative;
+  }
+
+  .step-number {
+    width: 56px; height: 56px;
+    border: 2px solid var(--cyan);
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem; font-weight: 900;
+    color: var(--cyan);
+    margin: 0 auto 1.5rem;
+    position: relative;
+    background: var(--dark);
+    box-shadow: 0 0 20px var(--cyan-glow);
+    clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  }
+
+  .step-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.2rem; font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+  }
+
+  .step-desc {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  /* ── CATEGORIES ── */
+  .categories { background: var(--dark2); }
+
+  .cats-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1rem;
+    max-width: 1200px; margin: 0 auto;
+  }
+
+  .cat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.5rem 0.8rem;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--cyan);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+
+  .cat-card:hover::after { transform: scaleX(1); }
+  .cat-card:hover {
+    border-color: rgba(0,229,255,0.4);
+    background: rgba(0,229,255,0.05);
+    transform: translateY(-4px);
+  }
+
+  .cat-icon {
+    font-size: 1.8rem;
+    display: block; margin-bottom: 0.8rem;
+  }
+
+  .cat-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim);
+    transition: color 0.3s;
+  }
+
+  .cat-card:hover .cat-name { color: var(--cyan); }
+
+  /* ── MOCKUP SECTION ── */
+  .mockup-section {
+    background: var(--dark);
+    overflow: hidden;
+  }
+
+  .mockup-inner {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 5rem; align-items: center;
+    max-width: 1200px; margin: 0 auto;
+  }
+
+  .mockup-text .section-title { text-align: left; margin-bottom: 1.5rem; }
+
+  .mockup-text p {
+    color: var(--text-dim);
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+  }
+
+  .feature-list {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .feature-list li {
+    display: flex; align-items: flex-start; gap: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .feature-list li .f-icon {
+    width: 28px; height: 28px;
+    border: 1px solid var(--cyan);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    color: var(--cyan);
+    flex-shrink: 0;
+    clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+    background: var(--cyan-glow);
+  }
+
+  /* Dashboard mockup */
+  .dashboard-mock {
+    background: #080f1a;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px var(--border);
+    position: relative;
+  }
+
+  .dashboard-mock::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--cyan), var(--purple), var(--green));
+  }
+
+  .dash-header {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 1rem;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .dash-avatar {
+    width: 44px; height: 44px;
+    border: 2px solid var(--cyan);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem; font-weight: 700;
+    color: var(--cyan);
+    background: rgba(0,229,255,0.1);
+  }
+
+  .dash-player-info h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700; font-size: 1rem;
+    color: var(--cyan);
+  }
+
+  .dash-tags {
+    display: flex; gap: 0.5rem; margin-top: 0.3rem;
+  }
+
+  .dash-tag {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 1px;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    border: 1px solid;
+  }
+
+  .dash-tag.green { border-color: var(--green); color: var(--green); background: rgba(0,255,136,0.08); }
+  .dash-tag.blue { border-color: #4fc3f7; color: #4fc3f7; background: rgba(79,195,247,0.08); }
+  .dash-tag.purple { border-color: var(--purple); color: var(--purple); background: rgba(168,85,247,0.08); }
+
+  .dash-tabs {
+    display: flex; gap: 0; padding: 0 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dash-tab {
+    padding: 0.8rem 1.2rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+
+  .dash-tab.active {
+    color: var(--cyan);
+    border-bottom-color: var(--cyan);
+  }
+
+  .dash-metrics {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 0; padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dash-metric {
+    text-align: center; padding: 0.5rem;
+    border-right: 1px solid var(--border);
+  }
+
+  .dash-metric:last-child { border-right: none; }
+
+  .dm-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.4rem; font-weight: 700;
+    color: #fff;
+  }
+
+  .dm-lab {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 0.2rem;
+  }
+
+  .dash-body { padding: 1.2rem 1.5rem; }
+
+  .strength-row, .improve-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;
+  }
+
+  .s-box, .i-box {
+    padding: 0.8rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+
+  .s-box {
+    background: rgba(0,255,136,0.06);
+    border: 1px solid rgba(0,255,136,0.2);
+  }
+
+  .i-box {
+    background: rgba(239,83,80,0.06);
+    border: 1px solid rgba(239,83,80,0.2);
+  }
+
+  .s-box h4 { color: var(--green); font-family: 'Rajdhani', sans-serif; font-size: 0.7rem; letter-spacing: 1px; margin-bottom: 0.5rem; }
+  .i-box h4 { color: #ef5350; font-family: 'Rajdhani', sans-serif; font-size: 0.7rem; letter-spacing: 1px; margin-bottom: 0.5rem; }
+
+  .s-box ul, .i-box ul { list-style: none; color: var(--text-dim); }
+  .s-box li::before { content: '✓ '; color: var(--green); }
+  .s-box li, .i-box li { line-height: 1.6; }
+  .i-box li::before { content: '! '; color: #ef5350; }
+
+  /* ── TESTIMONIAL / QUOTE ── */
+  .quote-section {
+    background: var(--dark2);
+    text-align: center;
+    padding: 5rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quote-section::before {
+    content: '❝';
+    position: absolute;
+    font-size: 20rem;
+    color: rgba(0,229,255,0.03);
+    font-family: Georgia, serif;
+    top: -4rem; left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .quote-text {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    font-weight: 500;
+    line-height: 1.5;
+    max-width: 800px; margin: 0 auto 2rem;
+    color: #fff;
+    position: relative;
+  }
+
+  .quote-text em {
+    font-style: normal;
+    color: var(--cyan);
+  }
+
+  .quote-author {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.85rem; font-weight: 600;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  /* ── CTA FINAL ── */
+  .cta-final {
+    background: var(--dark);
+    text-align: center;
+    padding: 7rem 4rem;
+    position: relative; overflow: hidden;
+  }
+
+  .cta-final::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,229,255,0.05) 0%, transparent 70%);
+  }
+
+  .cta-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 900;
+    line-height: 1.1; margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  .cta-title span { color: var(--cyan); }
+
+  .cta-sub {
+    font-size: 1rem;
+    color: var(--text-dim);
+    margin-bottom: 3rem;
+    position: relative;
+  }
+
+  .cta-box {
+    display: inline-flex; gap: 1rem;
+    position: relative;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--dark2);
+    border-top: 1px solid var(--border);
+    padding: 3rem 4rem;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1.5rem;
+  }
+
+  .footer-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem; font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--cyan);
+  }
+
+  .footer-links {
+    display: flex; gap: 2rem; list-style: none;
+  }
+
+  .footer-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600; letter-spacing: 1px;
+    transition: color 0.3s;
+  }
+
+  .footer-links a:hover { color: var(--cyan); }
+
+  .footer-copy {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    color: rgba(224,247,250,0.25);
+    letter-spacing: 1px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 1.5rem; }
+    .plans-grid { grid-template-columns: 1fr; }
+    .cats-grid { grid-template-columns: repeat(4, 1fr); }
+    .steps { grid-template-columns: 1fr; }
+    .steps::before { display: none; }
+    .mockup-inner { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); padding: 2rem 1.5rem; }
+    footer { flex-direction: column; align-items: flex-start; }
+    .hero { padding: 7rem 1.5rem 4rem; }
+    .hero-title { font-size: clamp(3rem, 12vw, 5rem); }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon">IA</div>
+    <span class="logo-text">IA<span>FL</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#planes">Planes</a></li>
+    <li><a href="#como-funciona">Cómo Funciona</a></li>
+    <li><a href="#plataforma">Plataforma</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('planes').scrollIntoView({behavior:'smooth'})">Solicitar Demo</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="scan-line"></div>
+  <div class="corner-tl"></div>
+  <div class="corner-br"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">IA Aplicada al Fútbol Formativo</div>
+
+    <h1 class="hero-title">
+      <span class="highlight">IAFL</span>
+    </h1>
+
+    <p class="hero-subtitle-line">
+      Diagnóstico <span>|</span> Academia <span>|</span> Seguimiento
+    </p>
+
+    <p class="hero-description">
+      La primera plataforma de análisis deportivo con inteligencia artificial diseñada para descubrir, evaluar y potenciar el talento de jóvenes futbolistas.
+    </p>
+
+    <div class="hero-ctas">
+      <a href="#planes" class="btn-primary">▶ Ver Planes</a>
+      <a href="#como-funciona" class="btn-secondary">↓ Cómo Funciona</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-number">7+</div>
+    <div class="stat-label">Categorías de Análisis</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">48h</div>
+    <div class="stat-label">Entrega de Reporte</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">100%</div>
+    <div class="stat-label">Basado en Datos Reales</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">4W</div>
+    <div class="stat-label">Plan de Mejora Incluido</div>
+  </div>
+</div>
+
+<!-- PLANS -->
+<section class="plans" id="planes">
+  <div class="section-header reveal">
+    <span class="section-tag">Servicios</span>
+    <h2 class="section-title">Elige tu <span>Plan IAFL</span></h2>
+  </div>
+
+  <div class="plans-grid">
+    <div class="plan-card reveal">
+      <div class="plan-name">IAFL</div>
+      <div class="plan-title">Diagnóstico</div>
+      <div class="plan-desc">Evaluación completa e individual del jugador con informe detallado y plan de mejora personalizado.</div>
+      <div class="plan-price">S/300</div>
+      <div class="plan-price-note">Pago único · por jugador</div>
+      <hr class="plan-divider">
+      <ul class="plan-features">
+        <li>Análisis técnico completo</li>
+        <li>Análisis físico con métricas</li>
+        <li>Reporte PDF profesional</li>
+        <li>Plan de mejora 4 semanas</li>
+        <li>Notas de voz del entrenador</li>
+      </ul>
+      <button class="plan-btn">Solicitar Diagnóstico</button>
+    </div>
+
+    <div class="plan-card featured reveal">
+      <div class="plan-name">IAFL</div>
+      <div class="plan-title">Academia</div>
+      <div class="plan-desc">Evaluación masiva de plantel completo. Ideal para academias y escuelas de fútbol con múltiples jugadores.</div>
+      <div class="plan-price">S/150</div>
+      <div class="plan-price-note">Por jugador · plantel completo</div>
+      <hr class="plan-divider">
+      <ul class="plan-features">
+        <li>Todo lo del plan Diagnóstico</li>
+        <li>Dashboard comparativo de plantel</li>
+        <li>Rankings internos por categoría</li>
+        <li>Sesión de revisión con el coach</li>
+        <li>Soporte técnico prioritario</li>
+      </ul>
+      <button class="plan-btn">Solicitar para Academia</button>
+    </div>
+
+    <div class="plan-card reveal">
+      <div class="plan-name">IAFL</div>
+      <div class="plan-title">Seguimiento</div>
+      <div class="plan-desc">Monitoreo trimestral del desarrollo del jugador. Seguimiento continuo de evolución y objetivos.</div>
+      <div class="plan-price">S/600</div>
+      <div class="plan-price-note">Por trimestre · seguimiento continuo</div>
+      <hr class="plan-divider">
+      <ul class="plan-features">
+        <li>3 evaluaciones por trimestre</li>
+        <li>Timeline de evolución</li>
+        <li>Ajustes del plan de mejora</li>
+        <li>Heatmaps y análisis táctico</li>
+        <li>Reporte mensual para padres</li>
+      </ul>
+      <button class="plan-btn">Iniciar Seguimiento</button>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="como-funciona">
+  <div class="section-header reveal">
+    <span class="section-tag">Proceso</span>
+    <h2 class="section-title">Cómo <span>Funciona</span></h2>
+  </div>
+
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-number">01</div>
+      <div class="step-title">Sesión de Evaluación</div>
+      <p class="step-desc">El jugador participa en una sesión estructurada donde se capturan métricas técnicas, físicas y tácticas mediante sensores y análisis de video.</p>
+    </div>
+
+    <div class="step reveal">
+      <div class="step-number">02</div>
+      <div class="step-title">Análisis con IA</div>
+      <p class="step-desc">Nuestra plataforma procesa los datos en 7 categorías de rendimiento y genera un diagnóstico preciso con comparativas por edad y categoría.</p>
+    </div>
+
+    <div class="step reveal">
+      <div class="step-number">03</div>
+      <div class="step-title">Reporte & Plan de Acción</div>
+      <p class="step-desc">El entrenador recibe un reporte PDF completo con fortalezas, áreas de mejora y un plan estructurado de 4 semanas con drills específicos.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="categories">
+  <div class="section-header reveal">
+    <span class="section-tag">Metodología</span>
+    <h2 class="section-title">7 Categorías de <span>Análisis</span></h2>
+  </div>
+
+  <div class="cats-grid">
+    <div class="cat-card reveal">
+      <span class="cat-icon">⚡</span>
+      <div class="cat-name">Técnico</div>
+    </div>
+    <div class="cat-card reveal">
+      <span class="cat-icon">🏃</span>
+      <div class="cat-name">Físico</div>
+    </div>
+    <div class="cat-card reveal">
+      <span class="cat-icon">🧠</span>
+      <div class="cat-name">Táctico</div>
+    </div>
+    <div class="cat-card reveal">
+      <span class="cat-icon">💪</span>
+      <div class="cat-name">Mental</div>
+    </div>
+    <div class="cat-card reveal">
+      <span class="cat-icon">⚽</span>
+      <div class="cat-name">Ofensivo</div>
+    </div>
+    <div class="cat-card reveal">
+      <span class="cat-icon">🛡️</span>
+      <div class="cat-name">Defensivo</div>
+    </div>
+    <div class="cat-card reveal">
+      <span class="cat-icon">🤝</span>
+      <div class="cat-name">Trabajo en Equipo</div>
+    </div>
+  </div>
+</section>
+
+<!-- PLATFORM MOCKUP -->
+<section class="mockup-section" id="plataforma">
+  <div class="mockup-inner">
+    <div class="mockup-text">
+      <span class="section-tag">Plataforma</span>
+      <h2 class="section-title reveal">Dashboard <span>Inteligente</span></h2>
+      <p class="reveal">Una interfaz diseñada para entrenadores: clara, potente y con toda la información que necesitas para tomar decisiones de desarrollo basadas en datos reales.</p>
+
+      <ul class="feature-list">
+        <li class="reveal">
+          <span class="f-icon">📊</span>
+          <span>Métricas en tiempo real: toques, distancia, sprints, velocidad máxima</span>
+        </li>
+        <li class="reveal">
+          <span class="f-icon">🎯</span>
+          <span>Análisis de ambidextría con distribución de toques derecha/izquierda</span>
+        </li>
+        <li class="reveal">
+          <span class="f-icon">🎤</span>
+          <span>Notas de voz del entrenador integradas directamente al perfil del jugador</span>
+        </li>
+        <li class="reveal">
+          <span class="f-icon">📄</span>
+          <span>Exportación PDF del reporte completo con un solo clic</span>
+        </li>
+      </ul>
+
+      <a href="#planes" class="btn-primary reveal">▶ Solicitar Acceso</a>
+    </div>
+
+    <!-- Dashboard Mockup -->
+    <div class="dashboard-mock reveal">
+      <div class="dash-header">
+        <div class="dash-avatar">BA</div>
+        <div class="dash-player-info">
+          <h3>Bruno Avilez</h3>
+          <div class="dash-tags">
+            <span class="dash-tag green">7 AÑOS</span>
+            <span class="dash-tag blue">CAT. 2017</span>
+            <span class="dash-tag purple">POS: 9/10</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-tabs">
+        <div class="dash-tab active">Resumen</div>
+        <div class="dash-tab">Técnico</div>
+        <div class="dash-tab">Físico</div>
+        <div class="dash-tab">Plan</div>
+      </div>
+
+      <div class="dash-metrics">
+        <div class="dash-metric">
+          <div class="dm-val">148</div>
+          <div class="dm-lab">Toques</div>
+        </div>
+        <div class="dash-metric">
+          <div class="dm-val">4.6km</div>
+          <div class="dm-lab">Distancia</div>
+        </div>
+        <div class="dash-metric">
+          <div class="dm-val">27</div>
+          <div class="dm-lab">Vel. Máx</div>
+        </div>
+        <div class="dash-metric">
+          <div class="dm-val">14</div>
+          <div class="dm-lab">Sprints</div>
+        </div>
+      </div>
+
+      <div class="dash-body">
+        <div class="strength-row">
+          <div class="s-box">
+            <h4>✔ FORTALEZAS</h4>
+            <ul>
+              <li>Velocidad 27 km/h</li>
+              <li>Potencia tiro derecho</li>
+              <li>Lectura espacial</li>
+            </ul>
+          </div>
+          <div class="i-box">
+            <h4>! ÁREAS DE MEJORA</h4>
+            <ul>
+              <li>Sprints bajos (14)</li>
+              <li>Pie izq. débil (22%)</li>
+              <li>Baja intensidad</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote-section">
+  <p class="quote-text reveal">
+    "No se trata solo de medir el talento. Se trata de <em>entenderlo, potenciarlo y guiarlo</em> con inteligencia."
+  </p>
+  <span class="quote-author reveal">— IA Fútbol Lab · Metodología de Desarrollo</span>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final" id="contacto">
+  <h2 class="cta-title reveal">
+    ¿Listo para llevar tu<br><span>academia al siguiente nivel?</span>
+  </h2>
+  <p class="cta-sub reveal">Solicita una demo gratuita o comienza con tu primer diagnóstico hoy.</p>
+  <div class="cta-box reveal">
+    <a href="https://wa.me/51999999999?text=Hola!%20Quiero%20más%20información%20sobre%20IAFL" class="btn-primary" target="_blank">📱 WhatsApp</a>
+    <a href="mailto:contacto@iafutbollab.com" class="btn-secondary">✉ Email</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">IAFL</div>
+  <ul class="footer-links">
+    <li><a href="#planes">Planes</a></li>
+    <li><a href="#como-funciona">Metodología</a></li>
+    <li><a href="#plataforma">Plataforma</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 IA Fútbol Lab · Todos los derechos reservados</span>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Animated counters
+  function animateCount(el, end, suffix = '') {
+    let start = 0;
+    const duration = 1500;
+    const step = (timestamp) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.floor(eased * end) + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  // Trigger counter animation when stats bar is visible
+  const statsBar = document.querySelector('.stats-bar');
+  const counterObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      counterObserver.disconnect();
+    }
+  }, { threshold: 0.5 });
+
+  counterObserver.observe(statsBar);
+</script>
+
+</body>
+</html>
