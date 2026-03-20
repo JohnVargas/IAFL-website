@@ -52,22 +52,34 @@ nav {
 }
 
 .nav-brand {
-  display:flex; align-items:center; gap:0.75rem;
+  display:flex; align-items:center; gap:1rem;
 }
 
 .nav-logo-img {
-  height:34px; width:auto; object-fit:contain;
+  height:50px; width:auto; object-fit:contain;
   filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(160deg) brightness(1.1);
+  flex-shrink: 0;
+}
+
+.nav-brand-text {
+  display:flex; flex-direction:column; gap:0.05rem;
 }
 
 .nav-brand-name {
   font-family: 'Bebas Neue', sans-serif;
-  font-size:1.35rem; letter-spacing:3px;
-  color: var(--white);
+  font-size:1.5rem; letter-spacing:3px;
+  color: var(--white); line-height:1;
 }
 
 .nav-brand-name em {
   font-style:normal; color:var(--cyan);
+}
+
+.nav-brand-tagline {
+  font-family:'Rajdhani',sans-serif;
+  font-size:0.62rem; font-weight:600;
+  letter-spacing:3px; text-transform:uppercase;
+  color:var(--cyan); opacity:0.7;
 }
 
 .nav-right { display:flex; align-items:center; gap:3rem; }
@@ -646,15 +658,26 @@ footer {
 }
 
 .footer-brand {
-  display:flex; align-items:center; gap:.7rem;
+  display:flex; align-items:center; gap:1rem;
 }
 .footer-logo-img {
-  height:28px; width:auto; object-fit:contain;
+  height:44px; width:auto; object-fit:contain;
   filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(160deg) brightness(1.1);
+  flex-shrink: 0;
+}
+.footer-brand-text {
+  display:flex; flex-direction:column; gap:0.05rem;
 }
 .footer-name {
   font-family:'Bebas Neue',sans-serif;
-  font-size:1.1rem; letter-spacing:3px; color:var(--cyan);
+  font-size:1.2rem; letter-spacing:3px; color:var(--cyan);
+  line-height:1;
+}
+.footer-tagline {
+  font-family:'Rajdhani',sans-serif;
+  font-size:0.62rem; font-weight:600;
+  letter-spacing:3px; text-transform:uppercase;
+  color:var(--cyan); opacity:0.65;
 }
 
 .footer-links { display:flex; gap:2rem; list-style:none; }
@@ -709,7 +732,10 @@ footer {
 <nav>
   <div class="nav-brand">
     <img src="assets/images/logo_1.png" alt="IA Fútbol Lab" class="nav-logo-img">
-    <span class="nav-brand-name">IA <em>FÚTBOL</em> LAB</span>
+    <div class="nav-brand-text">
+      <span class="nav-brand-name">IA <em>FÚTBOL</em> LAB</span>
+      <span class="nav-brand-tagline">Diagnóstico Competitivo</span>
+    </div>
   </div>
   <div class="nav-right">
     <ul class="nav-links">
@@ -961,11 +987,11 @@ footer {
           <span class="cc-val">Escribir ahora →</span>
         </div>
       </a>
-      <a href="mailto:contacto@iafutbollab.com" class="contact-card">
+      <a href="/cdn-cgi/l/email-protection#93f0fcfde7f2f0e7fcd3faf2f5e6e7f1fcfffff2f1bdf0fcfe" class="contact-card">
         <span class="cc-icon">✉️</span>
         <div class="cc-body">
           <span class="cc-label">Email</span>
-          <span class="cc-val">contacto@iafutbollab.com</span>
+          <span class="cc-val"><span class="__cf_email__" data-cfemail="98fbf7f6ecf9fbecf7d8f1f9feedecfaf7f4f4f9fab6fbf7f5">[email&#160;protected]</span></span>
         </div>
       </a>
       <a href="#" class="contact-card">
@@ -983,7 +1009,10 @@ footer {
 <footer>
   <div class="footer-brand">
     <img src="assets/images/logo_1.png" alt="logo" class="footer-logo-img">
-    <span class="footer-name">IA FÚTBOL LAB</span>
+    <div class="footer-brand-text">
+      <span class="footer-name">IA FÚTBOL LAB</span>
+      <span class="footer-tagline">Diagnóstico Competitivo</span>
+    </div>
   </div>
   <ul class="footer-links">
     <li><a href="#proceso">Proceso</a></li>
@@ -994,17 +1023,6 @@ footer {
   <span class="footer-copy">© 2026 IA Fútbol Lab · Lima, Perú</span>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const els = document.querySelectorAll('.reveal, .reveal-left');
-const io = new IntersectionObserver((entries) => {
-  entries.forEach((e, i) => {
-    if (e.isIntersecting) {
-      setTimeout(() => e.target.classList.add('up'), i * 80);
-      io.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.08 });
-els.forEach(el => io.observe(el));
-</script>
-</body>
-</html>
+const io = new IntersectionObserver((entries) 
